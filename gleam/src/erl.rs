@@ -1,6 +1,6 @@
 use crate::ast::*;
 use crate::pretty::*;
-use crate::typ::Scope;
+use crate::typ::ValueConstructorKind;
 use heck::{CamelCase, SnakeCase};
 use itertools::Itertools;
 use std::char;
@@ -342,12 +342,14 @@ enum ListType<E, T> {
     NotList(T),
 }
 
-fn var(name: String, scope: Scope, env: &mut Env) -> Document {
-    match scope {
-        Scope::Enum { .. } => atom(name.to_snake_case()),
-        Scope::Local => env.local_var_name(name),
-        Scope::Import { module, .. } => module.join("@").to_doc(),
-        Scope::Module { arity, .. } => "fun ".to_doc().append(name).append("/").append(arity),
+fn var(name: String, constructor: ValueConstructorKind, env: &mut Env) -> Document {
+    match constructor {
+        ValueConstructorKind::Enum { .. } => atom(name.to_snake_case()),
+        ValueConstructorKind::Local => env.local_var_name(name),
+        ValueConstructorKind::Import { module, .. } => module.join("@").to_doc(),
+        ValueConstructorKind::Module { arity, .. } => {
+            "fun ".to_doc().append(name).append("/").append(arity)
+        }
     }
 }
 
@@ -408,13 +410,13 @@ fn is_constructor_label(label: &String) -> bool {
 fn call(fun: TypedExpr, args: Vec<TypedExpr>, env: &mut Env) -> Document {
     match fun {
         Expr::Var {
-            scope: Scope::Enum { .. },
+            constructor: ValueConstructorKind::Enum { .. },
             name,
             ..
         } => enum_(name, args, env),
 
         Expr::Var {
-            scope: Scope::Module { .. },
+            constructor: ValueConstructorKind::Module { .. },
             name,
             ..
         } => name.to_doc().append(call_args(args, env)),
@@ -507,7 +509,9 @@ fn expr(expression: TypedExpr, env: &mut Env) -> Document {
         Expr::Float { value, .. } => value.to_doc(),
         Expr::String { value, .. } => string(value),
         Expr::Seq { first, then, .. } => seq(*first, *then, env),
-        Expr::Var { name, scope, .. } => var(name, scope, env),
+        Expr::Var {
+            name, constructor, ..
+        } => var(name, constructor, env),
         Expr::Fn { args, body, .. } => fun(args, *body, env),
         Expr::Cons { head, tail, .. } => expr_list_cons(*head, *tail, env),
         Expr::Call { fun, args, .. } => call(*fun, args, env),
@@ -823,7 +827,7 @@ map() ->
                 body: Expr::Var {
                     meta: default(),
                     typ: crate::typ::int(),
-                    scope: Scope::Enum { arity: 0 },
+                    constructor: ValueConstructorKind::Enum { arity: 0 },
                     name: "Nil".to_string(),
                 },
             },
@@ -848,7 +852,7 @@ map() ->
                     then: Box::new(Expr::Var {
                         meta: default(),
                         typ: crate::typ::int(),
-                        scope: Scope::Local,
+                        constructor: ValueConstructorKind::Local,
                         name: "one_two".to_string(),
                     }),
                 },
@@ -1082,7 +1086,7 @@ some_function(
                     typ: crate::typ::int(),
                     meta: default(),
                     name: "some_arg".to_string(),
-                    scope: Scope::Local,
+                    constructor: ValueConstructorKind::Local,
                 },
             },
             Statement::Fn {
@@ -1095,7 +1099,7 @@ some_function(
                     typ: crate::typ::int(),
                     meta: default(),
                     name: "run_task".to_string(),
-                    scope: Scope::Module { arity: 6 },
+                    constructor: ValueConstructorKind::Module { arity: 6 },
                 },
             },
             Statement::Fn {
@@ -1113,7 +1117,7 @@ some_function(
                     module: Box::new(Expr::Var {
                         meta: default(),
                         name: "zero".to_string(),
-                        scope: Scope::Import {
+                        constructor: ValueConstructorKind::Import {
                             module: vec!["one".to_string()],
                             type_constructors: HashMap::new(),
                         },
@@ -1137,7 +1141,7 @@ some_function(
                     module: Box::new(Expr::Var {
                         meta: default(),
                         name: "zero".to_string(),
-                        scope: Scope::Import {
+                        constructor: ValueConstructorKind::Import {
                             module: vec!["one".to_string()],
                             type_constructors: HashMap::new(),
                         },
@@ -1158,7 +1162,7 @@ some_function(
                     module: Box::new(Expr::Var {
                         meta: default(),
                         name: "zero".to_string(),
-                        scope: Scope::Import {
+                        constructor: ValueConstructorKind::Import {
                             module: vec!["one".to_string()],
                             type_constructors: HashMap::new(),
                         },
@@ -1187,7 +1191,7 @@ some_function(
                         module: Box::new(Expr::Var {
                             meta: default(),
                             name: "zero".to_string(),
-                            scope: Scope::Import {
+                            constructor: ValueConstructorKind::Import {
                                 type_constructors: HashMap::new(),
                                 module: vec!["one".to_string()],
                             },
@@ -1385,7 +1389,7 @@ go() ->
                     }],
                     fun: Box::new(Expr::Var {
                         meta: default(),
-                        scope: Scope::Module { arity: 1 },
+                        constructor: ValueConstructorKind::Module { arity: 1 },
                         typ: crate::typ::int(),
                         name: "one_two".to_string(),
                     }),
@@ -1407,7 +1411,7 @@ go() ->
                     }],
                     fun: Box::new(Expr::Var {
                         meta: default(),
-                        scope: Scope::Local,
+                        constructor: ValueConstructorKind::Local,
                         typ: crate::typ::int(),
                         name: "one_two".to_string(),
                     }),
@@ -1437,7 +1441,7 @@ go() ->
                         }],
                         fun: Box::new(Expr::Var {
                             meta: default(),
-                            scope: Scope::Module { arity: 2 },
+                            constructor: ValueConstructorKind::Module { arity: 2 },
                             typ: crate::typ::int(),
                             name: "one_two".to_string(),
                         }),

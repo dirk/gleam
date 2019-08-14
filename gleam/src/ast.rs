@@ -1,6 +1,6 @@
-use crate::typ::{self, Scope};
+use crate::typ::{self, ValueConstructorKind};
 
-pub type TypedModule = Module<Scope, typ::Type, typ::ModuleTypeInfo>;
+pub type TypedModule = Module<ValueConstructorKind, typ::Type, typ::ModuleTypeInfo>;
 
 pub type UntypedModule = Module<(), (), ()>;
 
@@ -94,7 +94,7 @@ pub enum Type {
     },
 }
 
-pub type TypedStatement = Statement<Scope, typ::Type>;
+pub type TypedStatement = Statement<ValueConstructorKind, typ::Type>;
 
 pub type UntypedStatement = Statement<(), ()>;
 
@@ -163,7 +163,7 @@ pub enum BinOp {
     ModuloInt,
 }
 
-pub type TypedExpr = Expr<Scope, typ::Type>;
+pub type TypedExpr = Expr<ValueConstructorKind, typ::Type>;
 
 pub type UntypedExpr = Expr<(), ()>;
 
@@ -203,7 +203,7 @@ pub enum Expr<S, T> {
     Var {
         meta: Meta,
         typ: T,
-        scope: S,
+        constructor: S,
         name: String,
     },
 
@@ -333,7 +333,7 @@ impl TypedExpr {
     }
 }
 
-pub type TypedClause = Clause<Scope, typ::Type>;
+pub type TypedClause = Clause<ValueConstructorKind, typ::Type>;
 
 pub type UntypedClause = Clause<(), ()>;
 

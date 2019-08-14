@@ -319,7 +319,7 @@ Call: UntypedExpr = {
                 Expr::Var {
                     meta,
                     typ: (),
-                    scope: (),
+                    constructor: (),
                     name: hole_arg_name.to_string(),
                 }
             }
@@ -392,14 +392,14 @@ Var: UntypedExpr = {
     <s:@L> <v:VarName> <e:@L> => Expr::Var {
         meta: meta(s, e),
         typ: (),
-        scope: (),
+        constructor: (),
         name: v,
     },
 
     <s:@L> <v:UpName> <e:@L> => Expr::Var {
         meta: meta(s, e),
         typ: (),
-        scope: (),
+        constructor: (),
         name: v,
     }
 }

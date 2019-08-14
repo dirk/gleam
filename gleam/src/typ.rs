@@ -50,7 +50,7 @@ pub enum Type {
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub enum Scope {
+pub enum ValueConstructorKind {
     /// A locally defined variable or function parameter
     Local,
 
@@ -754,7 +754,7 @@ pub struct TypeConstructorInfo {
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct VariableInfo {
-    scope: Scope,
+    constructor: ValueConstructorKind,
     typ: Type,
 }
 
@@ -798,8 +798,16 @@ impl<'a> Env<'a> {
             },
         );
 
-        env.insert_variable("True".to_string(), Scope::Enum { arity: 0 }, bool());
-        env.insert_variable("False".to_string(), Scope::Enum { arity: 0 }, bool());
+        env.insert_variable(
+            "True".to_string(),
+            ValueConstructorKind::Enum { arity: 0 },
+            bool(),
+        );
+        env.insert_variable(
+            "False".to_string(),
+            ValueConstructorKind::Enum { arity: 0 },
+            bool(),
+        );
         env.insert_type_constructor(
             "Bool".to_string(),
             TypeConstructorInfo {
@@ -845,7 +853,11 @@ impl<'a> Env<'a> {
             },
         );
 
-        env.insert_variable("Nil".to_string(), Scope::Enum { arity: 0 }, bool());
+        env.insert_variable(
+            "Nil".to_string(),
+            ValueConstructorKind::Enum { arity: 0 },
+            bool(),
+        );
         env.insert_type_constructor(
             "Nil".to_string(),
             TypeConstructorInfo {
@@ -857,7 +869,7 @@ impl<'a> Env<'a> {
 
         env.insert_variable(
             "+".to_string(),
-            Scope::Local,
+            ValueConstructorKind::Local,
             Type::Fn {
                 args: vec![int(), int()],
                 retrn: Box::new(int()),
@@ -866,7 +878,7 @@ impl<'a> Env<'a> {
 
         env.insert_variable(
             "-".to_string(),
-            Scope::Local,
+            ValueConstructorKind::Local,
             Type::Fn {
                 args: vec![int(), int()],
                 retrn: Box::new(int()),
@@ -875,7 +887,7 @@ impl<'a> Env<'a> {
 
         env.insert_variable(
             "*".to_string(),
-            Scope::Local,
+            ValueConstructorKind::Local,
             Type::Fn {
                 args: vec![int(), int()],
                 retrn: Box::new(int()),
@@ -884,7 +896,7 @@ impl<'a> Env<'a> {
 
         env.insert_variable(
             "/".to_string(),
-            Scope::Local,
+            ValueConstructorKind::Local,
             Type::Fn {
                 args: vec![int(), int()],
                 retrn: Box::new(int()),
@@ -893,7 +905,7 @@ impl<'a> Env<'a> {
 
         env.insert_variable(
             "+.".to_string(),
-            Scope::Local,
+            ValueConstructorKind::Local,
             Type::Fn {
                 args: vec![float(), float()],
                 retrn: Box::new(float()),
@@ -902,7 +914,7 @@ impl<'a> Env<'a> {
 
         env.insert_variable(
             "-.".to_string(),
-            Scope::Local,
+            ValueConstructorKind::Local,
             Type::Fn {
                 args: vec![float(), float()],
                 retrn: Box::new(float()),
@@ -911,7 +923,7 @@ impl<'a> Env<'a> {
 
         env.insert_variable(
             "*.".to_string(),
-            Scope::Local,
+            ValueConstructorKind::Local,
             Type::Fn {
                 args: vec![float(), float()],
                 retrn: Box::new(float()),
@@ -920,7 +932,7 @@ impl<'a> Env<'a> {
 
         env.insert_variable(
             "||".to_string(),
-            Scope::Local,
+            ValueConstructorKind::Local,
             Type::Fn {
                 args: vec![bool(), bool()],
                 retrn: Box::new(bool()),
@@ -929,7 +941,7 @@ impl<'a> Env<'a> {
 
         env.insert_variable(
             "&&".to_string(),
-            Scope::Local,
+            ValueConstructorKind::Local,
             Type::Fn {
                 args: vec![bool(), bool()],
                 retrn: Box::new(bool()),
@@ -938,7 +950,7 @@ impl<'a> Env<'a> {
 
         env.insert_variable(
             "%".to_string(),
-            Scope::Local,
+            ValueConstructorKind::Local,
             Type::Fn {
                 args: vec![int(), int()],
                 retrn: Box::new(int()),
@@ -947,7 +959,7 @@ impl<'a> Env<'a> {
 
         env.insert_variable(
             "%.".to_string(),
-            Scope::Local,
+            ValueConstructorKind::Local,
             Type::Fn {
                 args: vec![float(), float()],
                 retrn: Box::new(float()),
@@ -956,7 +968,7 @@ impl<'a> Env<'a> {
 
         env.insert_variable(
             "/.".to_string(),
-            Scope::Local,
+            ValueConstructorKind::Local,
             Type::Fn {
                 args: vec![float(), float()],
                 retrn: Box::new(float()),
@@ -971,7 +983,7 @@ impl<'a> Env<'a> {
         };
         env.insert_variable(
             "|>".to_string(),
-            Scope::Local,
+            ValueConstructorKind::Local,
             Type::Fn {
                 args: vec![a, f],
                 retrn: Box::new(b),
@@ -981,7 +993,7 @@ impl<'a> Env<'a> {
         let a = env.new_generic_var();
         env.insert_variable(
             "==".to_string(),
-            Scope::Local,
+            ValueConstructorKind::Local,
             Type::Fn {
                 args: vec![a.clone(), a],
                 retrn: Box::new(bool()),
@@ -991,7 +1003,7 @@ impl<'a> Env<'a> {
         let a = env.new_generic_var();
         env.insert_variable(
             ">".to_string(),
-            Scope::Local,
+            ValueConstructorKind::Local,
             Type::Fn {
                 args: vec![a.clone(), a],
                 retrn: Box::new(bool()),
@@ -1001,7 +1013,7 @@ impl<'a> Env<'a> {
         let a = env.new_generic_var();
         env.insert_variable(
             ">=".to_string(),
-            Scope::Local,
+            ValueConstructorKind::Local,
             Type::Fn {
                 args: vec![a.clone(), a],
                 retrn: Box::new(bool()),
@@ -1011,7 +1023,7 @@ impl<'a> Env<'a> {
         let a = env.new_generic_var();
         env.insert_variable(
             "<".to_string(),
-            Scope::Local,
+            ValueConstructorKind::Local,
             Type::Fn {
                 args: vec![a.clone(), a],
                 retrn: Box::new(bool()),
@@ -1021,7 +1033,7 @@ impl<'a> Env<'a> {
         let a = env.new_generic_var();
         env.insert_variable(
             "<=".to_string(),
-            Scope::Local,
+            ValueConstructorKind::Local,
             Type::Fn {
                 args: vec![a.clone(), a],
                 retrn: Box::new(bool()),
@@ -1031,7 +1043,7 @@ impl<'a> Env<'a> {
         let a = env.new_generic_var();
         env.insert_variable(
             "!=".to_string(),
-            Scope::Local,
+            ValueConstructorKind::Local,
             Type::Fn {
                 args: vec![a.clone(), a],
                 retrn: Box::new(bool()),
@@ -1049,7 +1061,7 @@ impl<'a> Env<'a> {
         let error = env.new_generic_var();
         env.insert_variable(
             "Ok".to_string(),
-            Scope::Enum { arity: 1 },
+            ValueConstructorKind::Enum { arity: 1 },
             Type::Fn {
                 args: vec![ok.clone()],
                 retrn: Box::new(result(ok, error)),
@@ -1060,7 +1072,7 @@ impl<'a> Env<'a> {
         let error = env.new_generic_var();
         env.insert_variable(
             "Error".to_string(),
-            Scope::Enum { arity: 1 },
+            ValueConstructorKind::Enum { arity: 1 },
             Type::Fn {
                 args: vec![error.clone()],
                 retrn: Box::new(result(ok, error)),
@@ -1104,8 +1116,9 @@ impl<'a> Env<'a> {
 
     /// Map a variable in the current scope.
     ///
-    pub fn insert_variable(&mut self, name: String, scope: Scope, typ: Type) {
-        self.variables.insert(name, VariableInfo { scope, typ });
+    pub fn insert_variable(&mut self, name: String, constructor: ValueConstructorKind, typ: Type) {
+        self.variables
+            .insert(name, VariableInfo { constructor, typ });
     }
 
     /// Lookup a variable in the current scope.
@@ -1130,16 +1143,17 @@ impl<'a> Env<'a> {
         match module {
             None => self.type_constructors.get(name),
 
-            Some(m) => self
-                .variables
-                .get(m)
-                .and_then(|variable_info| match &variable_info.scope {
-                    Scope::Import {
-                        type_constructors, ..
-                    } => type_constructors.get(name),
+            Some(m) => {
+                self.variables
+                    .get(m)
+                    .and_then(|variable_info| match &variable_info.constructor {
+                        ValueConstructorKind::Import {
+                            type_constructors, ..
+                        } => type_constructors.get(name),
 
-                    _ => unimplemented!(),
-                }),
+                        _ => unimplemented!(),
+                    })
+            }
         }
     }
 
@@ -1369,7 +1383,7 @@ pub fn infer_module(
 
                 // Ensure function has not already been defined in this module
                 if let Some(VariableInfo {
-                    scope: Scope::Module { .. },
+                    constructor: ValueConstructorKind::Module { .. },
                     ..
                 }) = env.get_variable(&name)
                 {
@@ -1380,7 +1394,7 @@ pub fn infer_module(
                 let rec = env.new_unbound_var(level + 1);
                 env.insert_variable(
                     name.clone(),
-                    Scope::Module { arity: args.len() },
+                    ValueConstructorKind::Module { arity: args.len() },
                     rec.clone(),
                 );
 
@@ -1399,7 +1413,7 @@ pub fn infer_module(
                 let typ = generalise(typ, level);
                 env.insert_variable(
                     name.clone(),
-                    Scope::Module { arity: args.len() },
+                    ValueConstructorKind::Module { arity: args.len() },
                     typ.clone(),
                 );
 
@@ -1455,7 +1469,11 @@ pub fn infer_module(
                         });
                     }
                 }
-                env.insert_variable(name.clone(), Scope::Module { arity: args.len() }, typ);
+                env.insert_variable(
+                    name.clone(),
+                    ValueConstructorKind::Module { arity: args.len() },
+                    typ,
+                );
                 Ok(Statement::ExternalFn {
                     meta,
                     name,
@@ -1520,7 +1538,7 @@ pub fn infer_module(
                     };
                     env.insert_variable(
                         constructor.name.clone(),
-                        Scope::Enum {
+                        ValueConstructorKind::Enum {
                             arity: constructor.args.len(),
                         },
                         typ,
@@ -1585,7 +1603,7 @@ This should not be possible. Please report this crash",
                 };
                 env.insert_variable(
                     var,
-                    Scope::Import {
+                    ValueConstructorKind::Import {
                         module: module.clone(),
                         type_constructors: type_constructors.clone(),
                     },
@@ -1810,7 +1828,7 @@ pub fn infer(expr: UntypedExpr, level: usize, env: &mut Env) -> Result<TypedExpr
             let fun = Expr::Var {
                 meta: meta.clone(),
                 typ: (),
-                scope: (),
+                constructor: (),
                 name: bin_op_name(&name),
             };
             let (_fun, mut args, typ) = infer_call(fun, vec![*left, *right], level, &meta, env)?;
@@ -1872,13 +1890,13 @@ pub fn infer(expr: UntypedExpr, level: usize, env: &mut Env) -> Result<TypedExpr
         Expr::Var {
             meta,
             name,
-            scope: _,
+            constructor: _,
             typ: _,
         } => {
-            let VariableInfo { scope, typ } = infer_var(&name, level, &meta, env)?;
+            let VariableInfo { constructor, typ } = infer_var(&name, level, &meta, env)?;
             Ok(Expr::Var {
                 meta,
-                scope,
+                constructor,
                 typ,
                 name,
             })
@@ -1972,7 +1990,7 @@ fn unify_pattern(pattern: &Pattern, typ: &Type, level: usize, env: &mut Env) -> 
         Pattern::Discard { .. } => Ok(()),
 
         Pattern::Var { name, .. } => {
-            env.insert_variable(name.to_string(), Scope::Local, typ.clone());
+            env.insert_variable(name.to_string(), ValueConstructorKind::Local, typ.clone());
             Ok(())
         }
 
@@ -2084,7 +2102,7 @@ fn infer_possibly_namespaced_var(
             let VariableInfo { typ, .. } = infer_var(module, level, meta, env)?;
             let typ = infer_module_select(&typ, name, level, meta, env)?;
             Ok(VariableInfo {
-                scope: Scope::Module { arity: 0 },
+                constructor: ValueConstructorKind::Module { arity: 0 },
                 typ,
             })
         }
@@ -2092,7 +2110,7 @@ fn infer_possibly_namespaced_var(
 }
 
 fn infer_var(name: &str, level: usize, meta: &Meta, env: &mut Env) -> Result<VariableInfo, Error> {
-    let VariableInfo { scope, typ } =
+    let VariableInfo { constructor, typ } =
         env.get_variable(name)
             .cloned()
             .ok_or_else(|| Error::UnknownVariable {
@@ -2101,7 +2119,7 @@ fn infer_var(name: &str, level: usize, meta: &Meta, env: &mut Env) -> Result<Var
                 variables: env.variables.clone(),
             })?;
     let typ = instantiate(typ, level, env);
-    Ok(VariableInfo { scope, typ })
+    Ok(VariableInfo { constructor, typ })
 }
 
 fn infer_call(
@@ -2157,7 +2175,9 @@ fn infer_fun(
     let previous_vars = env.variables.clone();
     for (arg, t) in args.iter().zip(args_types.iter()) {
         match &arg.name {
-            Some(name) => env.insert_variable(name.to_string(), Scope::Local, (*t).clone()),
+            Some(name) => {
+                env.insert_variable(name.to_string(), ValueConstructorKind::Local, (*t).clone())
+            }
             None => (),
         };
     }

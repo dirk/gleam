@@ -197,7 +197,7 @@ fn expr_test() {
                 meta: Meta { start: 0, end: 5 },
                 typ: (),
                 name: "hello".to_string(),
-                scope: (),
+                constructor: (),
             }),
             args: vec![
                 Expr::Int {
@@ -220,7 +220,7 @@ fn expr_test() {
             meta: Meta { start: 0, end: 5 },
             typ: (),
             name: "hello".to_string(),
-            scope: (),
+            constructor: (),
         }),
         ExprParser::new().parse("hello"),
     );
@@ -232,7 +232,7 @@ fn expr_test() {
             fun: Box::new(Expr::Var {
                 meta: Meta { start: 0, end: 4 },
                 typ: (),
-                scope: (),
+                constructor: (),
                 name: "Pair".to_string(),
             }),
             args: vec![
@@ -310,7 +310,7 @@ fn expr_test() {
             },
             then: Box::new(Expr::Var {
                 typ: (),
-                scope: (),
+                constructor: (),
                 meta: Meta { start: 14, end: 15 },
                 name: "x".to_string(),
             })
@@ -510,7 +510,7 @@ fn expr_test() {
                 meta: Meta { start: 0, end: 6 },
                 typ: (),
                 name: "person".to_string(),
-                scope: (),
+                constructor: (),
             })
         }),
         ExprParser::new().parse("person.name"),
@@ -525,7 +525,7 @@ fn expr_test() {
                 meta: Meta { start: 0, end: 6 },
                 typ: (),
                 name: "person".to_string(),
-                scope: (),
+                constructor: (),
             })
         }),
         ExprParser::new().parse("person:name"),
@@ -587,7 +587,7 @@ fn expr_test() {
                 fun: Box::new(Expr::Var {
                     meta: Meta { start: 0, end: 1 },
                     typ: (),
-                    scope: (),
+                    constructor: (),
                     name: "f".to_string(),
                 }),
                 args: vec![
@@ -599,7 +599,7 @@ fn expr_test() {
                     Expr::Var {
                         meta: Meta { start: 5, end: 6 },
                         typ: (),
-                        scope: (),
+                        constructor: (),
                         name: "capture@1".to_string(),
                     },
                     Expr::Int {
@@ -755,7 +755,7 @@ fn expr_test() {
                 meta: Meta { start: 2, end: 6 },
                 typ: (),
                 name: "jane".to_string(),
-                scope: (),
+                constructor: (),
             }),
         }),
         ExprParser::new().parse("{ jane | size = 2 }"),
@@ -767,7 +767,7 @@ fn expr_test() {
             typ: (),
             subject: Box::new(Expr::Var {
                 typ: (),
-                scope: (),
+                constructor: (),
                 meta: Meta { start: 5, end: 6 },
                 name: "x".to_string(),
             }),
@@ -1076,7 +1076,7 @@ fn module_test() {
                         value: Box::new(Expr::Var {
                             typ: (),
                             meta: Meta { start: 91, end: 92 },
-                            scope: (),
+                            constructor: (),
                             name: "x".to_string()
                         }),
                         pattern: Pattern::Constructor {
@@ -1093,7 +1093,7 @@ fn module_test() {
                                 start: 108,
                                 end: 109
                             },
-                            scope: (),
+                            constructor: (),
                             typ: (),
                             name: "a".to_string()
                         }),
@@ -1131,7 +1131,7 @@ fn module_test() {
                     value: Box::new(Expr::Var {
                         typ: (),
                         meta: Meta { start: 42, end: 43 },
-                        scope: (),
+                        constructor: (),
                         name: "x".to_string()
                     }),
                     pattern: Pattern::Nil {
@@ -1139,7 +1139,7 @@ fn module_test() {
                     },
                     then: Box::new(Expr::Var {
                         meta: Meta { start: 59, end: 60 },
-                        scope: (),
+                        constructor: (),
                         typ: (),
                         name: "a".to_string()
                     }),
@@ -1174,7 +1174,7 @@ fn module_test() {
                     value: Box::new(Expr::Var {
                         typ: (),
                         meta: Meta { start: 46, end: 47 },
-                        scope: (),
+                        constructor: (),
                         name: "x".to_string()
                     }),
                     pattern: Pattern::Cons {
@@ -1196,7 +1196,7 @@ fn module_test() {
                     },
                     then: Box::new(Expr::Var {
                         meta: Meta { start: 63, end: 64 },
-                        scope: (),
+                        constructor: (),
                         typ: (),
                         name: "a".to_string()
                     }),
@@ -1231,7 +1231,7 @@ fn module_test() {
                     value: Box::new(Expr::Var {
                         typ: (),
                         meta: Meta { start: 55, end: 56 },
-                        scope: (),
+                        constructor: (),
                         name: "x".to_string()
                     }),
                     pattern: Pattern::Cons {
@@ -1253,7 +1253,7 @@ fn module_test() {
                     },
                     then: Box::new(Expr::Var {
                         meta: Meta { start: 72, end: 73 },
-                        scope: (),
+                        constructor: (),
                         typ: (),
                         name: "a".to_string()
                     }),
