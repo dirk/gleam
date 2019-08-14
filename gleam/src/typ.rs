@@ -732,6 +732,11 @@ pub struct VariableInfo {
     typ: Type,
 }
 
+#[derive(Debug, Clone, PartialEq)]
+pub struct ModuleTypeInfo {
+    pub typ: Type,
+}
+
 pub type TypeConstructors = HashMap<String, TypeConstructorInfo>;
 
 #[derive(Debug, Clone)]
@@ -739,7 +744,7 @@ pub struct Env<'a> {
     uid: usize,
     annotated_generic_types: HashSet<usize>,
     variables: HashMap<String, VariableInfo>,
-    modules: &'a std::collections::HashMap<String, (Type, TypeConstructors)>,
+    importable_modules: &'a std::collections::HashMap<String, (Type, TypeConstructors)>,
     type_constructors: TypeConstructors,
 }
 
@@ -750,13 +755,15 @@ pub enum NewTypeAction {
 }
 
 impl<'a> Env<'a> {
-    pub fn new(modules: &'a std::collections::HashMap<String, (Type, TypeConstructors)>) -> Self {
+    pub fn new(
+        importable_modules: &'a std::collections::HashMap<String, (Type, TypeConstructors)>,
+    ) -> Self {
         let mut env = Self {
             uid: 0,
             annotated_generic_types: HashSet::new(),
             type_constructors: hashmap![],
             variables: hashmap![],
-            modules,
+            importable_modules,
         };
 
         env.insert_type_constructor(
@@ -1323,7 +1330,7 @@ pub fn infer_module(
     let mut fields = vec![];
     let module_name = &module.name;
 
-    let statements = module
+    let statements: Vec<Statement<_, Type>> = module
         .statements
         .into_iter()
         .map(|s| match s {
@@ -1542,7 +1549,7 @@ pub fn infer_module(
                 module,
                 as_name,
             } => {
-                let (typ, module_types) = env.modules.get(&module.join("/")).expect(
+                let (typ, module_types) = env.importable_modules.get(&module.join("/")).expect(
                     "COMPILER BUG: Typer could not find a module being imported.
 This should not be possible. Please report this crash",
                 );
@@ -1579,7 +1586,9 @@ This should not be possible. Please report this crash",
         Module {
             name: module.name,
             statements,
-            typ: Type::Module { row: Box::new(row) },
+            type_info: ModuleTypeInfo {
+                typ: Type::Module { row: Box::new(row) },
+            },
         },
         env.type_constructors,
     ))
@@ -3921,7 +3930,11 @@ pub fn two() { one() + zero() }",
         assert_eq!(
             (
                 src,
-                result.typ.to_gleam_doc(&mut hashmap![], &mut 0).format(80)
+                result
+                    .type_info
+                    .typ
+                    .to_gleam_doc(&mut hashmap![], &mut 0)
+                    .format(80)
             ),
             (src, typ.to_string()),
         );

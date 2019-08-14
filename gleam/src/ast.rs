@@ -1,17 +1,17 @@
 use crate::typ;
 
-pub type TypedModule = Module<Scope<typ::Type>, typ::Type>;
+pub type TypedModule = Module<Scope<typ::Type>, typ::Type, typ::ModuleTypeInfo>;
 
-pub type UntypedModule = Module<(), ()>;
+pub type UntypedModule = Module<(), (), ()>;
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct Module<S, T> {
+pub struct Module<S, T, I> {
     pub name: Vec<String>,
-    pub typ: T,
+    pub type_info: I,
     pub statements: Vec<Statement<S, T>>,
 }
 
-impl<S, T> Module<S, T> {
+impl<S, T, I> Module<S, T, I> {
     pub fn name_string(&self) -> String {
         self.name.join("/")
     }

@@ -598,7 +598,9 @@ fn external_fun(name: String, module: String, fun: String, arity: usize) -> Docu
 #[test]
 fn module_test() {
     let m = Module {
-        typ: crate::typ::int(),
+        type_info: crate::typ::ModuleTypeInfo {
+            typ: crate::typ::int(),
+        },
         name: vec!["magic".to_string()],
         statements: vec![
             Statement::ExternalType {
@@ -681,7 +683,9 @@ map() ->
     assert_eq!(expected, module(m));
 
     let m = Module {
-        typ: crate::typ::int(),
+        type_info: crate::typ::ModuleTypeInfo {
+            typ: crate::typ::int(),
+        },
         name: vec!["term".to_string()],
         statements: vec![
             Statement::Fn {
@@ -980,7 +984,9 @@ funny() ->
     assert_eq!(expected, module(m));
 
     let m = Module {
-        typ: crate::typ::int(),
+        type_info: crate::typ::ModuleTypeInfo {
+            typ: crate::typ::int(),
+        },
         name: vec!["term".to_string()],
         statements: vec![Statement::Fn {
             return_annotation: None,
@@ -1057,7 +1063,9 @@ some_function(
     assert_eq!(expected, module(m));
 
     let m = Module {
-        typ: crate::typ::int(),
+        type_info: crate::typ::ModuleTypeInfo {
+            typ: crate::typ::int(),
+        },
         name: vec!["vars".to_string()],
         statements: vec![
             Statement::Fn {
@@ -1236,7 +1244,9 @@ moddy4() ->
     assert_eq!(expected, module(m));
 
     let m = Module {
-        typ: crate::typ::int(),
+        type_info: crate::typ::ModuleTypeInfo {
+            typ: crate::typ::int(),
+        },
         name: vec!["my_mod".to_string()],
         statements: vec![Statement::Fn {
             return_annotation: None,
@@ -1370,7 +1380,9 @@ go() ->
     assert_eq!(expected, module(m));
 
     let m = Module {
-        typ: crate::typ::int(),
+        type_info: crate::typ::ModuleTypeInfo {
+            typ: crate::typ::int(),
+        },
         name: vec!["funny".to_string()],
         statements: vec![
             Statement::Fn {

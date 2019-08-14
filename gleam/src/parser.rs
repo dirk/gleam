@@ -809,7 +809,7 @@ fn module_test() {
 
     assert_eq!(
         Ok(Module {
-            typ: (),
+            type_info: (),
             name: vec![],
             statements: vec![]
         }),
@@ -818,7 +818,7 @@ fn module_test() {
 
     assert_eq!(
         Ok(Module {
-            typ: (),
+            type_info: (),
             name: vec![],
             statements: vec![Statement::Import {
                 meta: Meta { start: 0, end: 12 },
@@ -831,7 +831,7 @@ fn module_test() {
 
     assert_eq!(
         Ok(Module {
-            typ: (),
+            type_info: (),
             name: vec![],
             statements: vec![Statement::ExternalType {
                 meta: Meta { start: 0, end: 18 },
@@ -845,7 +845,7 @@ fn module_test() {
 
     assert_eq!(
         Ok(Module {
-            typ: (),
+            type_info: (),
             name: vec![],
             statements: vec![Statement::ExternalType {
                 meta: Meta { start: 0, end: 22 },
@@ -859,7 +859,7 @@ fn module_test() {
 
     assert_eq!(
         Ok(Module {
-            typ: (),
+            type_info: (),
             name: vec![],
             statements: vec![Statement::ExternalType {
                 meta: Meta { start: 0, end: 26 },
@@ -873,7 +873,7 @@ fn module_test() {
 
     assert_eq!(
         Ok(Module {
-            typ: (),
+            type_info: (),
             name: vec![],
             statements: vec![Statement::Fn {
                 return_annotation: None,
@@ -913,7 +913,7 @@ fn module_test() {
 
     assert_eq!(
         Ok(Module {
-            typ: (),
+            type_info: (),
             name: vec![],
             statements: vec![Statement::Fn {
                 return_annotation: None,
@@ -960,7 +960,7 @@ fn module_test() {
 
     assert_eq!(
         Ok(Module {
-            typ: (),
+            type_info: (),
             name: vec![],
             statements: vec![Statement::Fn {
                 return_annotation: None,
@@ -980,7 +980,7 @@ fn module_test() {
 
     assert_eq!(
         Ok(Module {
-            typ: (),
+            type_info: (),
             name: vec![],
             statements: vec![Statement::ExternalFn {
                 meta: Meta { start: 0, end: 49 },
@@ -1015,7 +1015,7 @@ fn module_test() {
 
     assert_eq!(
         Ok(Module {
-            typ: (),
+            type_info: (),
             name: vec![],
             statements: vec![Statement::Enum {
                 meta: Meta { start: 0, end: 28 },
@@ -1037,7 +1037,7 @@ fn module_test() {
 
     assert_eq!(
         Ok(Module {
-            typ: (),
+            type_info: (),
             name: vec![],
             statements: vec![
                 Statement::Enum {
@@ -1113,7 +1113,7 @@ fn module_test() {
 
     assert_eq!(
         Ok(Module {
-            typ: (),
+            type_info: (),
             name: vec![],
             statements: vec![Statement::Fn {
                 return_annotation: None,
@@ -1156,7 +1156,7 @@ fn module_test() {
 
     assert_eq!(
         Ok(Module {
-            typ: (),
+            type_info: (),
             name: vec![],
             statements: vec![Statement::Fn {
                 return_annotation: None,
@@ -1213,7 +1213,7 @@ fn module_test() {
 
     assert_eq!(
         Ok(Module {
-            typ: (),
+            type_info: (),
             name: vec![],
             statements: vec![Statement::Fn {
                 return_annotation: None,
@@ -1270,7 +1270,7 @@ fn module_test() {
 
     assert_eq!(
         Ok(Module {
-            typ: (),
+            type_info: (),
             name: vec![],
             statements: vec![Statement::Import {
                 meta: Meta { start: 0, end: 20 },
@@ -1283,7 +1283,7 @@ fn module_test() {
 
     assert_eq!(
         Ok(Module {
-            typ: (),
+            type_info: (),
             name: vec![],
             statements: vec![Statement::Fn {
                 return_annotation: Some(Type::Constructor {
@@ -1317,7 +1317,7 @@ fn module_test() {
 
     assert_eq!(
         Ok(Module {
-            typ: (),
+            type_info: (),
             name: vec![],
             statements: vec![Statement::Import {
                 meta: Meta { start: 0, end: 21 },

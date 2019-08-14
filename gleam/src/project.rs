@@ -669,7 +669,7 @@ pub fn compile(srcs: Vec<Input>) -> Result<Vec<Compiled>, Error> {
             let (module, types) = crate::typ::infer_module(module, &module_types)
                 .map_err(|error| Error::Type { path, src, error })?;
 
-            module_types.insert(name_string, (module.typ.clone(), types));
+            module_types.insert(name_string, (module.type_info.typ.clone(), types));
 
             let path = base_path
                 .parent()
