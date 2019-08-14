@@ -1,6 +1,6 @@
-use crate::typ::{self, ValueConstructorKind};
+use crate::typ::{self, ValueConstructorInfo};
 
-pub type TypedModule = Module<ValueConstructorKind, typ::Type, typ::ModuleTypeInfo>;
+pub type TypedModule = Module<ValueConstructorInfo, typ::Type, typ::ModuleTypeInfo>;
 
 pub type UntypedModule = Module<(), (), ()>;
 
@@ -94,7 +94,7 @@ pub enum Type {
     },
 }
 
-pub type TypedStatement = Statement<ValueConstructorKind, typ::Type>;
+pub type TypedStatement = Statement<ValueConstructorInfo, typ::Type>;
 
 pub type UntypedStatement = Statement<(), ()>;
 
@@ -163,7 +163,7 @@ pub enum BinOp {
     ModuloInt,
 }
 
-pub type TypedExpr = Expr<ValueConstructorKind, typ::Type>;
+pub type TypedExpr = Expr<ValueConstructorInfo, typ::Type>;
 
 pub type UntypedExpr = Expr<(), ()>;
 
@@ -333,7 +333,7 @@ impl TypedExpr {
     }
 }
 
-pub type TypedClause = Clause<ValueConstructorKind, typ::Type>;
+pub type TypedClause = Clause<ValueConstructorInfo, typ::Type>;
 
 pub type UntypedClause = Clause<(), ()>;
 
