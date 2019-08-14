@@ -263,7 +263,9 @@ pub fn sort_test() {
 
   list:sort([])
   |> expect:equal(_, [])
+}
 
+pub fn sort_ordered_test() {
   list:sort_ordered([{1, 2}, {4, 5}, {3, 2}, {1, 3}], fn(a, b) {
     let {a1, a2} = a
     let {b1, b2} = b
