@@ -182,8 +182,19 @@ sort_test() ->
     gleam@expect:equal(gleam@list:sort([4, 3, 6, 5, 4]), [3, 4, 4, 5, 6]),
     gleam@expect:equal(gleam@list:sort([]), []),
     gleam@expect:equal(
-        gleam@list:sort([{1, 2}, {4, 5}, {3, 2}]),
-        [{1, 2}, {3, 2}, {4, 5}]
+        gleam@list:sort_ordered(
+            [{1, 2}, {4, 5}, {3, 2}, {1, 3}],
+            fun(A, B) -> {A1, A2} = A,
+                {B1, B2} = B,
+                case A1 =< B1 of
+                    true ->
+                        A2 =< B2;
+
+                    false ->
+                        false
+                end end
+        ),
+        [{1, 2}, {1, 3}, {3, 2}, {4, 5}]
     ).
 
 index_map_test() ->

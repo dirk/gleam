@@ -1,7 +1,7 @@
 -module(gleam@list).
 -compile(no_auto_import).
 
--export([length/1, reverse/1, is_empty/1, contains/2, head/1, tail/1, filter/2, map/2, index_map/2, traverse/2, drop/2, take/2, new/0, append/2, flatten/1, fold/3, fold_right/3, find/2, all/2, any/2, zip/2, strict_zip/2, intersperse/2, at/2, unique/1, sort/1, range/2, repeat/2, split/2, split_while/2]).
+-export([length/1, reverse/1, is_empty/1, contains/2, head/1, tail/1, filter/2, map/2, index_map/2, traverse/2, drop/2, take/2, new/0, append/2, flatten/1, fold/3, fold_right/3, find/2, all/2, any/2, zip/2, strict_zip/2, intersperse/2, at/2, unique/1, sort_ordered/2, sort/1, range/2, repeat/2, split/2, split_while/2]).
 
 length(A) ->
     erlang:length(A).
@@ -277,7 +277,7 @@ unique(List) ->
             [X | unique(filter(Rest, fun(Y) -> Y /= X end))]
     end.
 
-merge_sort(A, B) ->
+merge_sort(A, B, Cmp) ->
     case {A, B} of
         {[], _} ->
             B;
@@ -286,16 +286,16 @@ merge_sort(A, B) ->
             A;
 
         {[Ax | Ar], [Bx | Br]} ->
-            case Ax < Bx of
+            case Cmp(Ax, Bx) of
                 true ->
-                    [Ax | merge_sort(Ar, B)];
+                    [Ax | merge_sort(Ar, B, Cmp)];
 
                 false ->
-                    [Bx | merge_sort(A, Br)]
+                    [Bx | merge_sort(A, Br, Cmp)]
             end
     end.
 
-sort(List) ->
+sort_ordered(List, Cmp) ->
     ListLength = length(List),
     case ListLength < 2 of
         true ->
@@ -305,8 +305,11 @@ sort(List) ->
             SplitLength = ListLength div 2,
             AList = take(List, SplitLength),
             BList = drop(List, SplitLength),
-            merge_sort(sort(AList), sort(BList))
+            merge_sort(sort_ordered(AList, Cmp), sort_ordered(BList, Cmp), Cmp)
     end.
+
+sort(List) ->
+    sort_ordered(List, fun(A, B) -> A =< B end).
 
 range(Start, Stop) ->
     case gleam@int:compare(Start, Stop) of

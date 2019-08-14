@@ -264,8 +264,15 @@ pub fn sort_test() {
   list:sort([])
   |> expect:equal(_, [])
 
-  list:sort([{1, 2}, {4, 5}, {3, 2}])
-  |> expect:equal(_, [{1, 2}, {3, 2}, {4, 5}])
+  list:sort_ordered([{1, 2}, {4, 5}, {3, 2}, {1, 3}], fn(a, b) {
+    let {a1, a2} = a
+    let {b1, b2} = b
+    case a1 <= b1 {
+    | True -> a2 <= b2
+    | False -> False
+    }
+  })
+  |> expect:equal(_, [{1, 2}, {1, 3}, {3, 2}, {4, 5}])
 }
 
 pub fn index_map_test() {
