@@ -1,11 +1,11 @@
 use crate::ast::{
-    self, Arg, BinOp, Clause, Expr, Meta, Module, Pattern, Scope, Statement, TypedExpr,
-    TypedModule, UntypedExpr, UntypedModule,
+    self, Arg, BinOp, Clause, Expr, Meta, Module, Pattern, Statement, TypedExpr, TypedModule,
+    UntypedExpr, UntypedModule,
 };
 use crate::pretty::*;
-use im::{hashmap::HashMap, hashset::HashSet, ordmap::OrdMap};
 use itertools::Itertools;
 use std::cell::RefCell;
+use std::collections::HashMap;
 use std::rc::Rc;
 
 const INDENT: isize = 2;
@@ -49,6 +49,24 @@ pub enum Type {
     },
 }
 
+#[derive(Debug, Clone, PartialEq)]
+pub enum Scope {
+    /// A locally defined variable or function parameter
+    Local,
+
+    /// An enum constructor or singleton
+    Enum { arity: usize },
+
+    /// A function in the current module
+    Module { arity: usize },
+
+    /// An imported module
+    Import {
+        module: Vec<String>,
+        type_constructors: HashMap<String, crate::typ::TypeConstructorInfo>,
+    },
+}
+
 impl Type {
     /// Render a Type as a well formatted string.
     ///
@@ -58,12 +76,16 @@ impl Type {
             b.push(' ');
         }
         b.to_doc()
-            .append(self.to_gleam_doc(&mut hashmap![], &mut initial_indent.clone()))
+            .append(self.to_gleam_doc(&mut im::hashmap![], &mut initial_indent.clone()))
             .nest(initial_indent as isize)
             .format(80)
     }
 
-    pub fn to_gleam_doc(&self, names: &mut HashMap<usize, String>, uid: &mut usize) -> Document {
+    pub fn to_gleam_doc(
+        &self,
+        names: &mut im::HashMap<usize, String>,
+        uid: &mut usize,
+    ) -> Document {
         match self {
             Type::App { name, args, .. } => {
                 if args.len() == 0 {
@@ -178,7 +200,7 @@ impl Type {
         }
     }
 
-    fn gather_fields(&self, fields: &mut OrdMap<String, Type>) -> Option<Type> {
+    fn gather_fields(&self, fields: &mut im::OrdMap<String, Type>) -> Option<Type> {
         match self {
             Type::RowNil => None,
 
@@ -302,7 +324,11 @@ impl Type {
 }
 
 impl TypeVar {
-    pub fn to_gleam_doc(&self, names: &mut HashMap<usize, String>, uid: &mut usize) -> Document {
+    pub fn to_gleam_doc(
+        &self,
+        names: &mut im::HashMap<usize, String>,
+        uid: &mut usize,
+    ) -> Document {
         match self {
             TypeVar::Link { ref typ, .. } => typ.to_gleam_doc(names, uid),
 
@@ -442,7 +468,7 @@ fn letter_test() {
 
 fn args_to_gleam_doc(
     args: &[Type],
-    names: &mut HashMap<usize, String>,
+    names: &mut im::HashMap<usize, String>,
     uid: &mut usize,
 ) -> Document {
     match args.len() {
@@ -728,24 +754,23 @@ pub struct TypeConstructorInfo {
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct VariableInfo {
-    scope: Scope<Type>,
+    scope: Scope,
     typ: Type,
 }
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct ModuleTypeInfo {
     pub typ: Type,
+    pub type_constructors: HashMap<String, TypeConstructorInfo>,
 }
-
-pub type TypeConstructors = HashMap<String, TypeConstructorInfo>;
 
 #[derive(Debug, Clone)]
 pub struct Env<'a> {
     uid: usize,
-    annotated_generic_types: HashSet<usize>,
-    variables: HashMap<String, VariableInfo>,
-    importable_modules: &'a std::collections::HashMap<String, (Type, TypeConstructors)>,
-    type_constructors: TypeConstructors,
+    annotated_generic_types: im::HashSet<usize>,
+    variables: im::HashMap<String, VariableInfo>,
+    importable_modules: &'a HashMap<String, ModuleTypeInfo>,
+    type_constructors: HashMap<String, TypeConstructorInfo>,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -755,13 +780,11 @@ pub enum NewTypeAction {
 }
 
 impl<'a> Env<'a> {
-    pub fn new(
-        importable_modules: &'a std::collections::HashMap<String, (Type, TypeConstructors)>,
-    ) -> Self {
+    pub fn new(importable_modules: &'a HashMap<String, ModuleTypeInfo>) -> Self {
         let mut env = Self {
             uid: 0,
-            annotated_generic_types: HashSet::new(),
-            type_constructors: hashmap![],
+            annotated_generic_types: im::HashSet::new(),
+            type_constructors: HashMap::new(),
             variables: hashmap![],
             importable_modules,
         };
@@ -1081,7 +1104,7 @@ impl<'a> Env<'a> {
 
     /// Map a variable in the current scope.
     ///
-    pub fn insert_variable(&mut self, name: String, scope: Scope<Type>, typ: Type) {
+    pub fn insert_variable(&mut self, name: String, scope: Scope, typ: Type) {
         self.variables.insert(name, VariableInfo { scope, typ });
     }
 
@@ -1129,7 +1152,7 @@ impl<'a> Env<'a> {
     pub fn type_from_ast(
         &mut self,
         ast: &ast::Type,
-        vars: &mut HashMap<String, (usize, Type)>,
+        vars: &mut im::HashMap<String, (usize, Type)>,
         new: NewTypeAction,
     ) -> Result<Type, Error> {
         match ast {
@@ -1221,7 +1244,7 @@ impl<'a> Env<'a> {
         &mut self,
         fields: &Vec<(String, ast::Type)>,
         tail: &Option<Box<ast::Type>>,
-        vars: &mut HashMap<String, (usize, Type)>,
+        vars: &mut im::HashMap<String, (usize, Type)>,
         new: NewTypeAction,
     ) -> Result<Type, Error> {
         let tail = match tail {
@@ -1244,7 +1267,7 @@ pub enum Error {
     UnknownVariable {
         meta: Meta,
         name: String,
-        variables: HashMap<String, VariableInfo>,
+        variables: im::HashMap<String, VariableInfo>,
     },
 
     UnknownType {
@@ -1324,8 +1347,8 @@ impl RowContainerType {
 ///
 pub fn infer_module(
     module: UntypedModule,
-    modules: &std::collections::HashMap<String, (Type, TypeConstructors)>,
-) -> Result<(TypedModule, TypeConstructors), Error> {
+    modules: &HashMap<String, ModuleTypeInfo>,
+) -> Result<TypedModule, Error> {
     let mut env = Env::new(modules);
     let mut fields = vec![];
     let module_name = &module.name;
@@ -1549,7 +1572,10 @@ pub fn infer_module(
                 module,
                 as_name,
             } => {
-                let (typ, module_types) = env.importable_modules.get(&module.join("/")).expect(
+                let ModuleTypeInfo {
+                    typ,
+                    type_constructors,
+                } = env.importable_modules.get(&module.join("/")).expect(
                     "COMPILER BUG: Typer could not find a module being imported.
 This should not be possible. Please report this crash",
                 );
@@ -1561,7 +1587,7 @@ This should not be possible. Please report this crash",
                     var,
                     Scope::Import {
                         module: module.clone(),
-                        type_constructors: module_types.clone(),
+                        type_constructors: type_constructors.clone(),
                     },
                     typ.clone(),
                 );
@@ -1582,16 +1608,14 @@ This should not be possible. Please report this crash",
             tail: Box::new(tail),
         });
 
-    Ok((
-        Module {
-            name: module.name,
-            statements,
-            type_info: ModuleTypeInfo {
-                typ: Type::Module { row: Box::new(row) },
-            },
+    Ok(Module {
+        name: module.name,
+        statements,
+        type_info: ModuleTypeInfo {
+            typ: Type::Module { row: Box::new(row) },
+            type_constructors: env.type_constructors,
         },
-        env.type_constructors,
-    ))
+    })
 }
 
 /// Crawl the AST, annotating each node with the inferred type or
@@ -2208,7 +2232,7 @@ fn convert_unify_error(e: UnifyError, meta: &Meta) -> Error {
 /// Instantiate converts generic variables into unbound ones.
 ///
 fn instantiate(typ: Type, ctx_level: usize, env: &mut Env) -> Type {
-    fn go(t: Type, ctx_level: usize, ids: &mut HashMap<usize, Type>, env: &mut Env) -> Type {
+    fn go(t: Type, ctx_level: usize, ids: &mut im::HashMap<usize, Type>, env: &mut Env) -> Type {
         match t {
             Type::App {
                 public,
@@ -2566,7 +2590,7 @@ fn unify_row_field(
 
 #[test]
 fn rewrite_row_test() {
-    let mods = std::collections::HashMap::new();
+    let mods = HashMap::new();
     let mut env = Env::new(&mods);
 
     let row = Type::RowCons {
@@ -3393,8 +3417,8 @@ fn infer_test() {
         let ast = crate::grammar::ExprParser::new()
             .parse(src)
             .expect("syntax error");
-        let result = infer(ast, 1, &mut Env::new(&std::collections::HashMap::new()))
-            .expect("should successfully infer");
+        let result =
+            infer(ast, 1, &mut Env::new(&HashMap::new())).expect("should successfully infer");
         assert_eq!(
             (
                 src,
@@ -3445,7 +3469,7 @@ fn infer_error_test() {
             error: Error::UnknownVariable {
                 meta: Meta { start: 0, end: 1 },
                 name: "x".to_string(),
-                variables: Env::new(&std::collections::HashMap::new()).variables,
+                variables: Env::new(&HashMap::new()).variables,
             },
         },
         Case {
@@ -3453,7 +3477,7 @@ fn infer_error_test() {
             error: Error::UnknownVariable {
                 meta: Meta { start: 0, end: 1 },
                 name: "x".to_string(),
-                variables: Env::new(&std::collections::HashMap::new()).variables,
+                variables: Env::new(&HashMap::new()).variables,
             },
         },
         Case {
@@ -3557,7 +3581,7 @@ fn infer_error_test() {
             error: Error::UnknownVariable {
                 meta: Meta { start: 25, end: 26 },
                 name: "x".to_string(),
-                variables: Env::new(&std::collections::HashMap::new()).variables,
+                variables: Env::new(&HashMap::new()).variables,
             },
         },
         Case {
@@ -3572,8 +3596,8 @@ fn infer_error_test() {
         let ast = crate::grammar::ExprParser::new()
             .parse(src)
             .expect("syntax error");
-        let result = infer(ast, 1, &mut Env::new(&std::collections::HashMap::new()))
-            .expect_err("should infer an error");
+        let result =
+            infer(ast, 1, &mut Env::new(&HashMap::new())).expect_err("should infer an error");
         assert_eq!((src, error), (src, &result));
     }
 }
@@ -3925,8 +3949,7 @@ pub fn two() { one() + zero() }",
         let ast = crate::grammar::ModuleParser::new()
             .parse(src)
             .expect("syntax error");
-        let (result, _) = infer_module(ast, &std::collections::HashMap::new())
-            .expect("should successfully infer");
+        let result = infer_module(ast, &HashMap::new()).expect("should successfully infer");
         assert_eq!(
             (
                 src,
@@ -4059,8 +4082,7 @@ pub fn x() { id(1, 1.0) }
         let ast = crate::grammar::ModuleParser::new()
             .parse(src)
             .expect("syntax error");
-        let result = infer_module(ast, &std::collections::HashMap::new())
-            .expect_err("should infer an error");
+        let result = infer_module(ast, &HashMap::new()).expect_err("should infer an error");
         assert_eq!((src, error), (src, &result));
     }
 
@@ -4071,6 +4093,6 @@ pub fn x() { id(1, 1.0) }
         let ast = crate::grammar::ModuleParser::new()
             .parse(src)
             .expect("syntax error");
-        infer_module(ast, &std::collections::HashMap::new()).expect_err("should infer an error");
+        infer_module(ast, &HashMap::new()).expect_err("should infer an error");
     }
 }

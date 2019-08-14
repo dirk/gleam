@@ -1,7 +1,7 @@
 use crate::ast::*;
 use crate::pretty::*;
+use crate::typ::Scope;
 use heck::{CamelCase, SnakeCase};
-use im::hashmap::HashMap;
 use itertools::Itertools;
 use std::char;
 use std::default::Default;
@@ -10,7 +10,7 @@ const INDENT: isize = 4;
 
 #[derive(Debug, Clone, Default)]
 struct Env {
-    vars: HashMap<String, usize>,
+    vars: im::HashMap<String, usize>,
 }
 
 impl Env {
@@ -342,13 +342,12 @@ enum ListType<E, T> {
     NotList(T),
 }
 
-fn var(name: String, scope: TypedScope, env: &mut Env) -> Document {
+fn var(name: String, scope: Scope, env: &mut Env) -> Document {
     match scope {
         Scope::Enum { .. } => atom(name.to_snake_case()),
         Scope::Local => env.local_var_name(name),
         Scope::Import { module, .. } => module.join("@").to_doc(),
         Scope::Module { arity, .. } => "fun ".to_doc().append(name).append("/").append(arity),
-        Scope::Constant { value } => expr(*value, env),
     }
 }
 
@@ -597,9 +596,11 @@ fn external_fun(name: String, module: String, fun: String, arity: usize) -> Docu
 
 #[test]
 fn module_test() {
+    use std::collections::HashMap;
     let m = Module {
         type_info: crate::typ::ModuleTypeInfo {
             typ: crate::typ::int(),
+            type_constructors: HashMap::new(),
         },
         name: vec!["magic".to_string()],
         statements: vec![
@@ -685,6 +686,7 @@ map() ->
     let m = Module {
         type_info: crate::typ::ModuleTypeInfo {
             typ: crate::typ::int(),
+            type_constructors: HashMap::new(),
         },
         name: vec!["term".to_string()],
         statements: vec![
@@ -986,6 +988,7 @@ funny() ->
     let m = Module {
         type_info: crate::typ::ModuleTypeInfo {
             typ: crate::typ::int(),
+            type_constructors: HashMap::new(),
         },
         name: vec!["term".to_string()],
         statements: vec![Statement::Fn {
@@ -1065,6 +1068,7 @@ some_function(
     let m = Module {
         type_info: crate::typ::ModuleTypeInfo {
             typ: crate::typ::int(),
+            type_constructors: HashMap::new(),
         },
         name: vec!["vars".to_string()],
         statements: vec![
@@ -1079,25 +1083,6 @@ some_function(
                     meta: default(),
                     name: "some_arg".to_string(),
                     scope: Scope::Local,
-                },
-            },
-            Statement::Fn {
-                return_annotation: None,
-                meta: default(),
-                public: false,
-                args: vec![],
-                name: "some_arg".to_string(),
-                body: Expr::Var {
-                    typ: crate::typ::int(),
-                    meta: default(),
-                    name: "some_arg".to_string(),
-                    scope: Scope::Constant {
-                        value: Box::new(Expr::Int {
-                            typ: crate::typ::int(),
-                            meta: default(),
-                            value: 1,
-                        }),
-                    },
                 },
             },
             Statement::Fn {
@@ -1130,7 +1115,7 @@ some_function(
                         name: "zero".to_string(),
                         scope: Scope::Import {
                             module: vec!["one".to_string()],
-                            type_constructors: im::HashMap::new(),
+                            type_constructors: HashMap::new(),
                         },
                         typ: crate::typ::int(),
                     }),
@@ -1154,7 +1139,7 @@ some_function(
                         name: "zero".to_string(),
                         scope: Scope::Import {
                             module: vec!["one".to_string()],
-                            type_constructors: im::HashMap::new(),
+                            type_constructors: HashMap::new(),
                         },
                         typ: crate::typ::int(),
                     }),
@@ -1175,7 +1160,7 @@ some_function(
                         name: "zero".to_string(),
                         scope: Scope::Import {
                             module: vec!["one".to_string()],
-                            type_constructors: im::HashMap::new(),
+                            type_constructors: HashMap::new(),
                         },
                         typ: crate::typ::int(),
                     }),
@@ -1203,7 +1188,7 @@ some_function(
                             meta: default(),
                             name: "zero".to_string(),
                             scope: Scope::Import {
-                                type_constructors: im::HashMap::new(),
+                                type_constructors: HashMap::new(),
                                 module: vec!["one".to_string()],
                             },
                             typ: crate::typ::int(),
@@ -1221,9 +1206,6 @@ some_function(
 
 arg() ->
     SomeArg.
-
-some_arg() ->
-    1.
 
 another() ->
     fun run_task/6.
@@ -1246,6 +1228,7 @@ moddy4() ->
     let m = Module {
         type_info: crate::typ::ModuleTypeInfo {
             typ: crate::typ::int(),
+            type_constructors: HashMap::new(),
         },
         name: vec!["my_mod".to_string()],
         statements: vec![Statement::Fn {
@@ -1382,6 +1365,7 @@ go() ->
     let m = Module {
         type_info: crate::typ::ModuleTypeInfo {
             typ: crate::typ::int(),
+            type_constructors: HashMap::new(),
         },
         name: vec!["funny".to_string()],
         statements: vec![
@@ -1692,7 +1676,7 @@ x() ->
         let ast = crate::grammar::ModuleParser::new()
             .parse(src)
             .expect("syntax error");
-        let (ast, _) = crate::typ::infer_module(ast, &std::collections::HashMap::new())
+        let ast = crate::typ::infer_module(ast, &std::collections::HashMap::new())
             .expect("should successfully infer");
         let output = module(ast);
         assert_eq!((src, output), (src, erl.to_string()));

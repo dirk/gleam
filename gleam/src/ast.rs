@@ -1,6 +1,6 @@
-use crate::typ;
+use crate::typ::{self, Scope};
 
-pub type TypedModule = Module<Scope<typ::Type>, typ::Type, typ::ModuleTypeInfo>;
+pub type TypedModule = Module<Scope, typ::Type, typ::ModuleTypeInfo>;
 
 pub type UntypedModule = Module<(), (), ()>;
 
@@ -94,7 +94,7 @@ pub enum Type {
     },
 }
 
-pub type TypedStatement = Statement<Scope<typ::Type>, typ::Type>;
+pub type TypedStatement = Statement<Scope, typ::Type>;
 
 pub type UntypedStatement = Statement<(), ()>;
 
@@ -163,30 +163,7 @@ pub enum BinOp {
     ModuloInt,
 }
 
-pub type TypedScope = Scope<typ::Type>;
-
-#[derive(Debug, Clone, PartialEq)]
-pub enum Scope<T> {
-    /// A locally defined variable or function parameter
-    Local,
-
-    /// An enum constructor or singleton
-    Enum { arity: usize },
-
-    /// A function in the current module
-    Module { arity: usize },
-
-    /// An imported module
-    Import {
-        module: Vec<String>,
-        type_constructors: im::HashMap<String, crate::typ::TypeConstructorInfo>,
-    },
-
-    /// A constant value to be inlined
-    Constant { value: Box<Expr<Scope<T>, T>> },
-}
-
-pub type TypedExpr = Expr<Scope<typ::Type>, typ::Type>;
+pub type TypedExpr = Expr<Scope, typ::Type>;
 
 pub type UntypedExpr = Expr<(), ()>;
 
@@ -356,7 +333,7 @@ impl TypedExpr {
     }
 }
 
-pub type TypedClause = Clause<Scope<typ::Type>, typ::Type>;
+pub type TypedClause = Clause<Scope, typ::Type>;
 
 pub type UntypedClause = Clause<(), ()>;
 

@@ -648,7 +648,7 @@ pub fn compile(srcs: Vec<Input>) -> Result<Vec<Compiled>, Error> {
         }
     }
 
-    let mut module_types = HashMap::new();
+    let mut modules_type_infos = HashMap::new();
 
     petgraph::algo::toposort(&deps_graph, None)
         .map_err(|_| Error::DependencyCycle)?
@@ -666,10 +666,10 @@ pub fn compile(srcs: Vec<Input>) -> Result<Vec<Compiled>, Error> {
 
             println!("Compiling {}", name_string);
 
-            let (module, types) = crate::typ::infer_module(module, &module_types)
+            let module = crate::typ::infer_module(module, &modules_type_infos)
                 .map_err(|error| Error::Type { path, src, error })?;
 
-            module_types.insert(name_string, (module.type_info.typ.clone(), types));
+            modules_type_infos.insert(name_string, module.type_info.clone());
 
             let path = base_path
                 .parent()
